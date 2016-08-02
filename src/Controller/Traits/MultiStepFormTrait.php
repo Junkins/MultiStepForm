@@ -1,5 +1,4 @@
-`<?php
-
+<?php
 namespace MultiStepForm\Controller\Traits;
 
 trait MultiStepFormTrait
