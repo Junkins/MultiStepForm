@@ -13,7 +13,7 @@ class MultiStepFormComponent extends Component
     protected $nextKey   = 'next';
     protected $backKey   = 'back';
     protected $hereKey   = 'here';
-    public    $hiddenKey = 'hidden_key';
+    public $hiddenKey = 'hidden_key';
 
     protected $whitelist = [];
 
@@ -75,7 +75,7 @@ class MultiStepFormComponent extends Component
         }
 
         // whitelistに含まれていない処理は自動的にautoRender false 設定
-        if ( array_search($this->action, $this->whitelist) === false ) {
+        if (array_search($this->action, $this->whitelist) === false) {
             $this->controller->autoRender = false;
         }
     }
@@ -85,7 +85,8 @@ class MultiStepFormComponent extends Component
     * 使用するテーブルの切り替え処理
     * @author ito
     */
-    public function setTable($table){
+    public function setTable($table)
+    {
         $this->Table = TableRegistry::get($table);
     }
 
@@ -109,12 +110,10 @@ class MultiStepFormComponent extends Component
 
         $defaultActionConfig = $this->defaultActionConfig;
         foreach ($defaultActionConfig as $actionSuffix => $configs) {
-
             $actionKey = $this->action . '_' . $actionSuffix;
 
             $actionConfig[$actionKey] = [];
             foreach ($configs as $configName => $configValue) {
-
                 if (
                     (
                         $configName === 'back' ||
@@ -273,7 +272,7 @@ class MultiStepFormComponent extends Component
     */
     public function getConfig($here = '')
     {
-        if ( empty($here) ) {
+        if (empty($here)) {
             return $this->actionConfig;
         }
 
@@ -331,7 +330,7 @@ class MultiStepFormComponent extends Component
     {
         $actionConfig = $this->actionConfig;
         $first = key(array_slice($actionConfig, 0, 1));
-        $firstConfig = array_shift($actionConfig);
+        $this->controller->set('here', $first);
         return $this->controller->{$first}();
     }
 
@@ -344,6 +343,7 @@ class MultiStepFormComponent extends Component
     {
         $actionConfig = $this->getActionConfig();
         $here = $actionConfig['here'];
+        $this->controller->set('here', $here);
         return $this->controller->{$here}();
     }
 
@@ -356,6 +356,7 @@ class MultiStepFormComponent extends Component
     {
         $actionConfig = $this->getActionConfig();
         $next = $actionConfig['next'];
+        $this->controller->set('here', $next);
         return $this->controller->{$next}();
     }
 
@@ -368,6 +369,7 @@ class MultiStepFormComponent extends Component
     {
         $actionConfig = $this->getActionConfig();
         $back = $actionConfig['back'];
+        $this->controller->set('here', $back);
         return $this->controller->{$back}();
     }
 
@@ -550,8 +552,6 @@ class MultiStepFormComponent extends Component
 
         $sessionKey = $this->request->data[$this->hiddenKey];
         $sessionData = $this->readData($sessionKey);
-        // セッションデータからEntityを作成 new Entity
-        $entityClass = $this->Table->entityClass();
         $marshaller = new NotUseSetterMarshaller($this->Table);
 
         $entity = null;
@@ -601,7 +601,7 @@ class MultiStepFormComponent extends Component
         $data           = ($this->isMultiple()) ? $data[$this->Table->alias()] : $data;
         $entity         =  $this->Table->{$newMethod}($data, ['validate' => $validate]);
 
-        if ( is_array($entity) ) {
+        if (is_array($entity)) {
             $entity[$this->hiddenKey] = $sessionKey;
         }
 
@@ -622,7 +622,7 @@ class MultiStepFormComponent extends Component
             isset($actionConfig['multiple']) &&
             $actionConfig['multiple']
         ) {
-            foreach ($entity as $key => $value) {
+            foreach ($entity as $value) {
                 if (
                     method_exists($value, 'errors') &&
                     !empty($value->errors())

@@ -1,4 +1,4 @@
-<?php
+`<?php
 
 namespace MultiStepForm\Controller\Traits;
 
@@ -18,3 +18,4 @@ trait MultiStepFormTrait
         return parent::isAction($action);
     }
 }
+

@@ -1,0 +1,15 @@
+{
+    "name": "junkins/multi-step-form",
+    "description": "CakePHP MultiStepForm",
+    "autoload": {
+        "psr-4": {
+            "MultiStepForm\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "MultiStepForm\\Test\\": "tests",
+            "MultiStepForm\\Test\\App\\": "tests/test_app/App"
+        }
+    }
+}
