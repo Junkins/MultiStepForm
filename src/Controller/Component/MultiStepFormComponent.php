@@ -1,57 +1,13 @@
 <?php
 namespace MultiStepForm\Controller\Component;
 
-use Cake\Controller\Component;
 use Cake\ORM\TableRegistry;
-use Cake\Utility\Hash;
-use Cake\Utility\Security;
 use Cake\Validation\Validation;
 use MultiStepForm\ORM\NotUseSetterMarshaller;
+use MultiStepForm\Controller\Component\MultiStepFormCoreComponent;
 
-class MultiStepFormComponent extends Component
+class MultiStepFormComponent extends MultiStepFormCoreComponent
 {
-    protected $nextKey   = 'next';
-    protected $backKey   = 'back';
-    protected $hereKey   = 'here';
-    public $hiddenKey = 'hidden_key';
-
-    protected $whitelist = [];
-
-    /**
-    * defaultConfig
-    * 初期設定
-    *
-    *
-    */
-    protected $defaultActionConfig = [
-        'input'   => [
-            'back'       => false,
-            'next'       => 'confirm',
-            'validate'   => 'default',
-            'associated' => []
-        ],
-        'confirm' => [
-            'back'       => 'input',
-            'next'       => 'finish',
-            'validate'   => false,
-            'associated' => []
-        ],
-        'finish'    => [
-            'back'       => 'confirm',
-            'next'       => false,
-            'validate'   => false,
-            'associated' => []
-        ],
-    ];
-
-    /**
-    * actionConfig
-    * アクションに関する設定
-    *
-    *
-    */
-    protected $actionConfig = [];
-
     /**
      * Initialize properties.
      *
@@ -60,24 +16,10 @@ class MultiStepFormComponent extends Component
      */
     public function initialize(array $config)
     {
+        parent::initialize($config);
+
         $controller         = $this->_registry->getController();
-        $this->controller   = $controller;
-        $this->response     =& $controller->response;
-        $this->request      =& $controller->request;
-        $this->action       = $controller->request->action;
-        $this->session      = $controller->request->session();
-
-        $this->actionConfig = $this->setDefaultConfig();
-        $this->Table        = TableRegistry::get($controller->modelClass);
-
-        if (!empty($config['whitelist'])) {
-            $this->whitelist = $config['whitelist'];
-        }
-
-        // whitelistに含まれていない処理は自動的にautoRender false 設定
-        if (array_search($this->action, $this->whitelist) === false) {
-            $this->controller->autoRender = false;
-        }
+        $this->Table = TableRegistry::get($controller->modelClass);
     }
 
     /**
@@ -91,80 +33,12 @@ class MultiStepFormComponent extends Component
     }
 
     /**
-    * setConfig
-    *
+    * getEntity
     * @author ito
     */
-    public function setConfig($actionConfig)
+    public function getEntity()
     {
-        $this->actionConfig = $actionConfig;
-    }
-
-    /**
-     * [setDefaultConfig description]
-     * @author ito
-     */
-    public function setDefaultConfig()
-    {
-        $actionConfig = null;
-
-        $defaultActionConfig = $this->defaultActionConfig;
-        foreach ($defaultActionConfig as $actionSuffix => $configs) {
-            $actionKey = $this->action . '_' . $actionSuffix;
-
-            $actionConfig[$actionKey] = [];
-            foreach ($configs as $configName => $configValue) {
-                if (
-                    (
-                        $configName === 'back' ||
-                        $configName === 'next'
-                    ) &&
-                    (
-                        $configValue !== false
-                    )
-                ) {
-                    $configValue = $this->action . '_' . $configValue;
-                }
-
-                $actionConfig[$actionKey][$configName] = $configValue;
-            }
-        }
-
-        return $actionConfig;
-    }
-
-    /**
-     * [insertConfig description]
-     *
-     * @author ito
-     */
-    public function insertConfig($path, $value)
-    {
-        $this->actionConfig = Hash::insert($this->actionConfig, $path, $value);
-    }
-
-    /**
-     * [insertConfig description]
-     *
-     * @author ito
-     */
-    public function mergeConfig($merge)
-    {
-        $this->actionConfig = Hash::merge($this->actionConfig, $merge);
-    }
-
-    /**
-    * getActionConfig
-    *
-    * @author ito
-    */
-    protected function getActionConfig()
-    {
-        $key = $this->hereKey;
-        $here = $this->request->data[$key];
-        $actionConfig = $this->actionConfig[$here];
-        $actionConfig[$key] = $here;
-        return $actionConfig;
+        return $this->entity;
     }
 
     /**
@@ -245,185 +119,6 @@ class MultiStepFormComponent extends Component
     }
 
     /**
-    * getEntity
-    *
-    * @author ito
-    */
-    public function getEntity()
-    {
-        return $this->entity;
-    }
-
-    /**
-    * getAllData
-    *
-    * @author ito
-    */
-    public function getAllData()
-    {
-        $sessionKey = $this->request->data[$this->hiddenKey];
-        return $this->readData($sessionKey);
-    }
-
-    /**
-    * getConfig
-    *
-    * @author ito
-    */
-    public function getConfig($here = '')
-    {
-        if (empty($here)) {
-            return $this->actionConfig;
-        }
-
-        return $this->actionConfig[$here];
-    }
-
-    /**
-    * whenGet
-    *
-    * @author ito
-    */
-    protected function whenGet()
-    {
-        // 初回アクセス
-        if ($this->isFirstAccess()) {
-            return 'first';
-        }
-        return 'through';
-    }
-
-    /**
-    * whenPost
-    *
-    * @author ito
-    */
-    protected function whenPost()
-    {
-        // POST情報の中にBACK移動先情報が含まれている場合
-        if ($this->isBackRequest()) {
-            return 'back';
-        }
-
-        // POST情報の中にNEXT移動先情報が含まれている場合
-        if ($this->isNextRequest()) {
-            // バリデーションチェック
-            if (!$this->validation()) {
-                return 'error';
-            }
-
-            // POSTデータをセッションに書き込み
-            $this->mergeData();
-            return 'next';
-        }
-
-        // POST情報の中に移動先情報が含まれていない場合
-        return 'through';
-    }
-
-    /**
-    * displayFirst
-    *
-    * @author ito
-    */
-    protected function displayFirst()
-    {
-        $actionConfig = $this->actionConfig;
-        $first = key(array_slice($actionConfig, 0, 1));
-        $this->controller->set('here', $first);
-        return $this->controller->{$first}();
-    }
-
-    /**
-    * throughHere
-    *
-    * @author ito
-    */
-    protected function throughHere()
-    {
-        $actionConfig = $this->getActionConfig();
-        $here = $actionConfig['here'];
-        $this->controller->set('here', $here);
-        return $this->controller->{$here}();
-    }
-
-    /**
-    * goNext
-    *
-    * @author ito
-    */
-    protected function goNext()
-    {
-        $actionConfig = $this->getActionConfig();
-        $next = $actionConfig['next'];
-        $this->controller->set('here', $next);
-        return $this->controller->{$next}();
-    }
-
-    /**
-    * goBack
-    *
-    * @author ito
-    */
-    protected function goBack()
-    {
-        $actionConfig = $this->getActionConfig();
-        $back = $actionConfig['back'];
-        $this->controller->set('here', $back);
-        return $this->controller->{$back}();
-    }
-
-    /**
-    * isFirstAccess
-    *
-    * @author ito
-    */
-    protected function isFirstAccess()
-    {
-        $hiddenKey = $this->hiddenKey;
-        if (
-            !isset($this->request->data[$hiddenKey]) ||
-            empty($this->readData($this->request->data[$hiddenKey]))
-        ) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-    * isNextRequest
-    *
-    * @author ito
-    */
-    protected function isNextRequest()
-    {
-        $requestData = $this->request->data;
-        $key = $this->nextKey;
-        if (array_key_exists($key, $requestData)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-    * isBackRequest
-    *
-    * @author ito
-    */
-    protected function isBackRequest()
-    {
-        $requestData = $this->request->data;
-        $key = $this->backKey;
-        if (array_key_exists($key, $requestData)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
     * validation
     *
     * @author ito
@@ -457,88 +152,31 @@ class MultiStepFormComponent extends Component
     }
 
     /**
-    * filterData
-    *
-    * @author ito
-    */
-    protected function filterData($data)
+     * isError
+     * @author ito
+     * @return boolean
+     */
+    protected function isError($entity)
     {
-        $filtered = [
-            $this->nextKey,
-            $this->backKey,
-            $this->hereKey,
-            $this->hiddenKey,
-        ];
+        $actionConfig = $this->getActionConfig();
 
-        foreach ($filtered as $field) {
-            if (array_key_exists($field, $data)) {
-                unset($data[$field]);
-            }
-        }
-
-        return $data;
-    }
-
-    /**
-    * mergeData
-    * リクエストデータとセッションデータのマージ
-    * @author ito
-    */
-    protected function mergeData()
-    {
-        $requestData = $this->request->data;
-        $sessionKey = $requestData[$this->hiddenKey];
-        $sessionData = $this->readData($sessionKey);
-
-        // リクエストデータから余計なデータを削除する。
-        // sessionKeyを取得したのちにフィルターをかける
-        $requestData = $this->filterData($requestData);
-
-        $writeData = [];
-        if (!empty($sessionData)) {
-            $writeData = $sessionData;
-            foreach ($requestData as $field => $value) {
-                $writeData[$field] = $value;
+        if (
+            isset($actionConfig['multiple']) &&
+            $actionConfig['multiple']
+        ) {
+            foreach ($entity as $value) {
+                if (
+                    method_exists($value, 'errors') &&
+                    !empty($value->errors())
+                ) {
+                    return true;
+                }
             }
         } else {
-            $writeData = $requestData;
+            return (!empty($entity->errors()));
         }
 
-        $this->writeData($sessionKey, $writeData);
-    }
-
-    /**
-    * readData
-    * セッションデータの読み込み
-    * @author ito
-    */
-    protected function readData($sessionKey)
-    {
-        if (!$this->session->check($sessionKey)) {
-            return [];
-        }
-
-        return $this->session->read($sessionKey);
-    }
-
-    /**
-    * writeData
-    * セッションデータの書き込み
-    * @author ito
-    */
-    protected function writeData($sessionKey, $data)
-    {
-        $this->session->write($sessionKey, $data);
-    }
-
-    /**
-    * publishKey
-    * セッションデータのキー発行
-    * @author ito
-    */
-    public function publishKey()
-    {
-        return Security::hash(time() . rand());
+        return false;
     }
 
     /**
@@ -575,17 +213,6 @@ class MultiStepFormComponent extends Component
     }
 
     /**
-     * isWhitelist
-     *
-     *
-     * @author ito
-     */
-    public function isWhitelist($action)
-    {
-        return (array_search($action, $this->whitelist) !== false);
-    }
-
-    /**
      * handleNewEntity
      *
      *
@@ -609,38 +236,7 @@ class MultiStepFormComponent extends Component
     }
 
     /**
-     * isError
-     *
-     * @author ito
-     * @return boolean
-     */
-    protected function isError($entity)
-    {
-        $actionConfig = $this->getActionConfig();
-
-        if (
-            isset($actionConfig['multiple']) &&
-            $actionConfig['multiple']
-        ) {
-            foreach ($entity as $value) {
-                if (
-                    method_exists($value, 'errors') &&
-                    !empty($value->errors())
-                ) {
-                    return true;
-                }
-            }
-        } else {
-            return (!empty($entity->errors()));
-        }
-
-        return false;
-    }
-
-    /**
      * isMultiple
-     *
-     *
      * @author ito
      */
     protected function isMultiple()
