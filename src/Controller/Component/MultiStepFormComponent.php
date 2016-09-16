@@ -49,6 +49,7 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
     public function dispach()
     {
         $destination = '';
+
         if (
             $this->request->is('post') ||
             $this->request->is('put')
@@ -56,8 +57,7 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
             // POSTリクエストの際の動き
             $destination = $this->whenPost();
         } else {
-            // 初回アクセス
-            // GETリクエストの際の動き
+            // GETリクエストの際の動き(初回アクセス)
             // $destination = 'through';
             $destination = $this->whenGet();
         }
@@ -113,7 +113,6 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
                 return $this->displayFirst();
                 break;
             default:
-                # code...
                 break;
         }
     }

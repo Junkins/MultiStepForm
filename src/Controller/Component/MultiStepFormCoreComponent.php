@@ -164,11 +164,11 @@ class MultiStepFormCoreComponent extends Component
     }
 
     /**
-    * getAllData
+    * getData
     *
     * @author ito
     */
-    public function getAllData()
+    public function getData()
     {
         $sessionKey = $this->request->data[$this->hiddenKey];
         return $this->readData($sessionKey);
