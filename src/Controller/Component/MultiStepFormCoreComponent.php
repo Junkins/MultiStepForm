@@ -203,13 +203,15 @@ class MultiStepFormCoreComponent extends Component
         // POST情報の中にNEXT移動先情報が含まれている場合
         if ($this->isNextRequest()) {
             // バリデーションチェック
-            if (!$this->validation()) {
-                return 'error';
-            }
-
+            $result = $this->validation();
             // POSTデータをセッションに書き込み
             $this->mergeData();
-            return 'next';
+
+            if (!$result) {
+                return 'error';
+            } else {
+                return 'next';
+            }
         }
 
         // POST情報の中に移動先情報が含まれていない場合
@@ -284,6 +286,7 @@ class MultiStepFormCoreComponent extends Component
         $actionConfig = $this->actionConfig;
         $first = key(array_slice($actionConfig, 0, 1));
         $this->controller->set('here', $first);
+        $this->request->data = $this->getData();
         return $this->controller->{$first}();
     }
 
@@ -297,6 +300,7 @@ class MultiStepFormCoreComponent extends Component
         $actionConfig = $this->getActionConfig();
         $here = $actionConfig['here'];
         $this->controller->set('here', $here);
+        $this->request->data = $this->getData();
         return $this->controller->{$here}();
     }
 
@@ -309,6 +313,7 @@ class MultiStepFormCoreComponent extends Component
         $actionConfig = $this->getActionConfig();
         $back = $actionConfig['back'];
         $this->controller->set('here', $back);
+        $this->request->data = $this->getData();
         return $this->controller->{$back}();
     }
 
@@ -322,6 +327,7 @@ class MultiStepFormCoreComponent extends Component
         $actionConfig = $this->getActionConfig();
         $next = $actionConfig['next'];
         $this->controller->set('here', $next);
+        $this->request->data = $this->getData();
         return $this->controller->{$next}();
     }
 

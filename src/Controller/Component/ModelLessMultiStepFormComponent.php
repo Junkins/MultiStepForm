@@ -92,6 +92,7 @@ class ModelLessMultiStepFormComponent extends MultiStepFormCoreComponent
     */
     protected function validation()
     {
-        return true;
+        $this->Form->validate($this->request->data);
+        return empty($this->Form->errors());
     }
 }
