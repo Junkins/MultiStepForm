@@ -3,6 +3,7 @@ namespace MultiStepForm\Controller\Component;
 
 use Cake\Controller\Component;
 use Cake\Utility\Hash;
+use Cake\Utility\Inflector;
 use Cake\Utility\Security;
 
 class MultiStepFormCoreComponent extends Component
@@ -175,6 +176,33 @@ class MultiStepFormCoreComponent extends Component
     }
 
     ################################################################
+
+    /**
+     * dispach
+     * @author ito
+     * @return [type] [description]
+     */
+    public function dispach()
+    {
+        if ( $this->request->is('post') ) {
+
+            if ( method_exists($this->controller, 'beforeDispach') ) {
+                $this->controller->beforeDispach();
+            }
+
+            $actionConfig = $this->getActionConfig();
+            $callback = '';
+            if ( !empty($actionConfig['callback']) ) {
+                $callback = $actionConfig['callback'];
+            } else {
+                $callback = 'before' . Inflector::camelize($actionConfig['here']);
+            }
+
+            if ( method_exists($this->controller, $callback) ) {
+                $this->controller->{$callback}();
+            }
+        }
+    }
 
     /**
     * whenGet
