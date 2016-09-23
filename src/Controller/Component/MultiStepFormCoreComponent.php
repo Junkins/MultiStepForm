@@ -426,7 +426,6 @@ class MultiStepFormCoreComponent extends Component
             $this->nextKey,
             $this->backKey,
             $this->hereKey,
-            $this->hiddenKey,
         ];
 
         foreach ($filtered as $field) {
