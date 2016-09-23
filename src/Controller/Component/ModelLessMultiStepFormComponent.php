@@ -46,8 +46,9 @@ class ModelLessMultiStepFormComponent extends MultiStepFormCoreComponent
     */
     public function dispach()
     {
-        $destination = '';
+        parent::dispach();
 
+        $destination = '';
         if (
             $this->request->is('post') ||
             $this->request->is('put')

@@ -21,13 +21,14 @@ trait MultiStepFormHelperTrait
             }
         }
 
-        $options['nextlabel'] = (empty($options['nextlabel']))? '確認': $options['nextlabel'];
-        $options['class']     = 'btn_sizeM btn_Black';
-        $options['name']      = 'next';
+        $nextOptions = [];
+        $nextOptions['nextlabel'] = (empty($options['nextlabel']))? $this->nextlabel: $options['nextlabel'];
+        $nextOptions['class']     = (empty($options['nextClass']))? $this->nextClass: $options['nextClass'];
+        $nextOptions['name']      = 'next';
 
         $html = '';
         $html = $this->localInfo($here);
-        $html .= $this->submit($options['nextlabel'], $options);
+        $html .= $this->submit($nextOptions['nextlabel'], $nextOptions);
         return $html;
     }
 
@@ -46,14 +47,13 @@ trait MultiStepFormHelperTrait
 
         $backOptions = $nextOptions = $options;
 
-        $nextOptions['label'] = (empty($options['nextlabel']))? '登録': $options['nextlabel'];
-        $backOptions['label'] = (empty($options['backlabel']))? '戻る': $options['backlabel'];
+        $nextOptions['label'] = (empty($options['nextlabel']))? $this->nextlabel: $options['nextlabel'];
+        $backOptions['label'] = (empty($options['backlabel']))? $this->backlabel: $options['backlabel'];
+        $nextOptions['class'] = (empty($options['nextClass']))? $this->nextClass: $options['nextClass'];
+        $backOptions['class'] = (empty($options['backClass']))? $this->backClass: $options['nextClass'];
 
-        $backOptions['name']  = 'back';
-        $nextOptions['name']  = 'next';
-
-        $backOptions['class']  = 'btn_sizeM btn_Black';
-        $nextOptions['class']  = 'btn_sizeM btn_Blue';
+        $nextOptions['name'] = 'next';
+        $backOptions['name'] = 'back';
 
         $html = '';
         $html = $this->localInfo($here);
