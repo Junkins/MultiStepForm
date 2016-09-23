@@ -171,6 +171,10 @@ class MultiStepFormCoreComponent extends Component
     */
     public function getData()
     {
+        if ( empty($this->request->data[$this->hiddenKey]) ) {
+            return [];
+        }
+
         $sessionKey = $this->request->data[$this->hiddenKey];
         return $this->readData($sessionKey);
     }
