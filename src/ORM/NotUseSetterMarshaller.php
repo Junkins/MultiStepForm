@@ -15,7 +15,7 @@ class NotUseSetterMarshaller extends Marshaller
     */
     public function publish($data, $options)
     {
-        $propertyMap = $this->_buildPropertyMap($options);
+        $propertyMap = $this->_buildPropertyMap($data, $options);
 
         $entityClass = $this->_table->entityClass();
         $entity = new $entityClass($data, ['useSetters' => false]);

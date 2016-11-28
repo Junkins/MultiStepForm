@@ -16,8 +16,8 @@ trait MultiStepFormHelperTrait
     public function next($here = null, $options = [])
     {
         if (empty($here)) {
-            if (isset($this->view->viewVars['here'])) {
-                $here = $this->view->viewVars['here'];
+            if (isset($this->View->viewVars['here'])) {
+                $here = $this->View->viewVars['here'];
             }
         }
 
@@ -40,8 +40,8 @@ trait MultiStepFormHelperTrait
     public function nextOrBack($here = null, $options = [])
     {
         if (empty($here)) {
-            if (isset($this->view->viewVars['here'])) {
-                $here = $this->view->viewVars['here'];
+            if (isset($this->View->viewVars['here'])) {
+                $here = $this->View->viewVars['here'];
             }
         }
 
