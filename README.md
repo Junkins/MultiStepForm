@@ -215,7 +215,7 @@ class TopicsController extends Controller
                 'id' => $id,
                 'back' => 'edit_first_input',
                 'next' => 'edit_third_input',
-                'validate' => 'default',
+                'validate' => default',
                 'multiple' => false,
                 'associated' => []
             ],
