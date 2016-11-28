@@ -9,9 +9,9 @@ trait MultiStepFormHelperTrait
 {
 
     /**
-     * [next]
+     * next
+     * @access public
      * @author ito
-     *
      */
     public function next($here = null, $options = [])
     {
@@ -33,9 +33,9 @@ trait MultiStepFormHelperTrait
     }
 
     /**
-     * [nextOrBack]
+     * nextOrBack
+     * @access public
      * @author ito
-     *
      */
     public function nextOrBack($here = null, $options = [])
     {
@@ -63,9 +63,32 @@ trait MultiStepFormHelperTrait
     }
 
     /**
-     * [localInfo]
+     * submitNoDiv
+     * submitフォームのdivタグを排除
+     * @access public
      * @author ito
-     *
+     */
+    public function submitNoDiv($caption = null, array $options = [])
+    {
+        //現在のテンプレートをロード
+        $currentTemplate = $this->templates('submitContainer');
+        //submitフォームのdivタグを排除
+        $this->templates([
+            'submitContainer' => '{{content}}'
+        ]);
+        //submitフォーム生成
+        $submitContent = parent::submit($caption, $options);
+        //テンプレートを差し戻す
+        $this->templates([
+            'submitContainer' => $currentTemplate
+        ]);
+        return $submitContent;
+    }
+
+    /**
+     * localInfo
+     * @access private
+     * @author ito
      */
     private function localInfo($here)
     {
@@ -74,4 +97,5 @@ trait MultiStepFormHelperTrait
         $html .= $this->input('here', ['type' => 'hidden', 'value' => $here]);
         return $html;
     }
+
 }
