@@ -204,27 +204,27 @@ class TopicsController extends Controller
         // デフォルトの設定を全て上書きする場合
         $this->MultiStepForm->setConfig([
             'edit_first_input' => [
-                'id'               => $id,
-                'back'          => false,
-                'next'           => 'edit_second_input',
-                'validate'      => 'default',
-                'multiple'      => false,
+                'id' => $id,
+                'back' => false,
+                'next' => 'edit_second_input',
+                'validate' => 'default',
+                'multiple' => false,
                 'associated' => []
             ],
             'edit_second_input' => [
-                'id'               => $id,
-                'back'          => 'edit_first_input',
-                'next'           => 'edit_third_input',
-                'validate'      => 'default',
-                'multiple'      => false,
+                'id' => $id,
+                'back' => 'edit_first_input',
+                'next' => 'edit_third_input',
+                'validate' => 'default',
+                'multiple' => false,
                 'associated' => []
             ],
             'edit_third_input' => [
-                'id'               => $id,
-                'back'          => 'edit_second_input',
-                'next'           => false,
-                'validate'      => 'default',
-                'multiple'      => false,
+                'id' => $id,
+                'back' => 'edit_second_input',
+                'next' => false,
+                'validate' => 'default',
+                'multiple' => false,
                 'associated' => []
             ],            
         ]);
