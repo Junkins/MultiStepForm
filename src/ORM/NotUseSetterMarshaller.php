@@ -21,11 +21,14 @@ class NotUseSetterMarshaller extends Marshaller
         $entity = new $entityClass($data, ['useSetters' => false]);
 
         foreach ($data as $key => $value) {
-            if (!isset($propertyMap[$key])) {
+            if (isset($propertyMap[$key])) {
                 continue;
             }
-            $assoc = $propertyMap[$key]['association'];
-            $value = $this->publishAssociation($assoc, $value, $propertyMap[$key]);
+            $assoc = $this->_table->association($key);
+            if (is_null($assoc)) {
+                continue;
+            }
+            $value = $this->publishAssociation($assoc, $value);
             $entity->{$key} = $value;
         }
 
@@ -37,7 +40,7 @@ class NotUseSetterMarshaller extends Marshaller
     *
     * @author ito
     */
-    protected function publishAssociation($assoc, $value, $options)
+    protected function publishAssociation($assoc, $value)
     {
         if (!is_array($value)) {
             return null;
@@ -52,12 +55,11 @@ class NotUseSetterMarshaller extends Marshaller
         }
 
         if ($assoc->type() === Association::MANY_TO_MANY) {
-            // @todo
-            return $this->publisBelongsToMany($assoc, $value, (array)$options);
+            return $this->publisBelongsToMany($assoc, $value['_ids']);
         }
 
         // @todo
-        return $this->publishMany($assoc, $value, (array)$options);
+        return $this->publishMany($assoc, $value);
     }
 
     /**
@@ -65,9 +67,20 @@ class NotUseSetterMarshaller extends Marshaller
     *
     * @author ito
     */
-    protected function publisBelongsToMany($assoc, $value, $options)
+    protected function publisBelongsToMany($assoc, $ids)
     {
-        return null;
+        if (empty($ids)) {
+            return [];
+        }
+
+        $target = $assoc->target();
+        $primaryKey = (array)$target->primaryKey();
+        $primaryKey = array_map([$target, 'aliasField'], $primaryKey);
+        $filter = [$primaryKey[0] . ' IN' => $ids];
+
+        $query = $target->find();
+        $query->where($filter);
+        return $query->toArray();
     }
 
     /**
@@ -75,7 +88,7 @@ class NotUseSetterMarshaller extends Marshaller
     *
     * @author ito
     */
-    protected function publishMany($assoc, $data, $options)
+    protected function publishMany($assoc, $data)
     {
         $targetTable = $assoc->target();
         $entityClass = $targetTable->entityClass();
