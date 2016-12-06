@@ -22,13 +22,37 @@ trait MultiStepFormHelperTrait
         }
 
         $nextOptions = [];
-        $nextOptions['nextlabel'] = (empty($options['nextlabel']))? $this->nextlabel: $options['nextlabel'];
-        $nextOptions['class']     = (empty($options['nextClass']))? $this->nextClass: $options['nextClass'];
+        $nextOptions['nextLabel'] = (empty($options['nextLabel']) && isset($this->nextLabel))? $this->nextLabel: $options['nextLabel'];
+        $nextOptions['class']     = (empty($options['nextClass']) && isset($this->nextClass))? $this->nextClass: $options['nextClass'];
         $nextOptions['name']      = 'next';
 
         $html = '';
         $html = $this->localInfo($here);
-        $html .= $this->submit($nextOptions['nextlabel'], $nextOptions);
+        $html .= $this->submit($nextOptions['nextLabel'], $nextOptions);
+        return $html;
+    }
+
+    /**
+     * back
+     * @access public
+     * @author ito
+     */
+    public function back($here = null, $options = [])
+    {
+        if (empty($here)) {
+            if (isset($this->View->viewVars['here'])) {
+                $here = $this->View->viewVars['here'];
+            }
+        }
+
+        $backOptions = [];
+        $backOptions['backLabel'] = (empty($options['backLabel']) && isset($this->backLabel))? $this->backLabel: $options['backLabel'];
+        $backOptions['class']     = (empty($options['backClass']) && isset($this->backClass))? $this->backClass: $options['backClass'];
+        $backOptions['name']      = 'back';
+
+        $html = '';
+        $html = $this->localInfo($here);
+        $html .= $this->submit($backOptions['backLabel'], $backOptions);
         return $html;
     }
 
@@ -47,10 +71,10 @@ trait MultiStepFormHelperTrait
 
         $backOptions = $nextOptions = $options;
 
-        $nextOptions['label'] = (empty($options['nextlabel']))? $this->nextlabel: $options['nextlabel'];
-        $backOptions['label'] = (empty($options['backlabel']))? $this->backlabel: $options['backlabel'];
-        $nextOptions['class'] = (empty($options['nextClass']))? $this->nextClass: $options['nextClass'];
-        $backOptions['class'] = (empty($options['backClass']))? $this->backClass: $options['nextClass'];
+        $nextOptions['label'] = (empty($options['nextLabel']) && isset($this->nextLabel))? $this->nextLabel: $options['nextLabel'];
+        $backOptions['label'] = (empty($options['backLabel']) && isset($this->backLabel))? $this->backLabel: $options['backLabel'];
+        $nextOptions['class'] = (empty($options['nextClass']) && isset($this->nextClass))? $this->nextClass: $options['nextClass'];
+        $backOptions['class'] = (empty($options['backClass']) && isset($this->backClass))? $this->backClass: $options['backClass'];
 
         $nextOptions['name'] = 'next';
         $backOptions['name'] = 'back';

@@ -19,6 +19,7 @@ class NotUseSetterMarshaller extends Marshaller
 
         $entityClass = $this->_table->entityClass();
         $entity = new $entityClass($data, ['useSetters' => false]);
+        $entity->source($this->_table->registryAlias());
 
         foreach ($data as $key => $value) {
             if (isset($propertyMap[$key])) {
@@ -51,7 +52,9 @@ class NotUseSetterMarshaller extends Marshaller
         if (in_array($assoc->type(), $types)) {
             $targetTable = $assoc->target();
             $entityClass = $targetTable->entityClass();
-            return new $entityClass($value, ['useSetters' => false]);
+            $entity = new $entityClass($value, ['useSetters' => false]);
+            $entity->source($this->_table->registryAlias());
+            return $entity;
         }
 
         if ($assoc->type() === Association::MANY_TO_MANY) {
@@ -95,7 +98,9 @@ class NotUseSetterMarshaller extends Marshaller
 
         $entities = [];
         foreach ($data as $key => $value) {
-            $entities[] = new $entityClass($value, ['useSetters' => false]);
+            $entity = new $entityClass($value, ['useSetters' => false]);
+            $entity->source($this->_table->registryAlias());
+            $entities[] = $entity;
         }
 
         return $entities;
