@@ -182,11 +182,11 @@ class MultiStepFormCoreComponent extends Component
     ################################################################
 
     /**
-     * dispach
+     * dispatch
      * @author ito
      * @return [type] [description]
      */
-    public function dispach()
+    public function dispatch()
     {
         if ( $this->request->is('post') ) {
 

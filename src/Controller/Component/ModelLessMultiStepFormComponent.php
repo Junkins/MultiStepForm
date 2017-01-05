@@ -40,13 +40,13 @@ class ModelLessMultiStepFormComponent extends MultiStepFormCoreComponent
     }
 
     /**
-    * dispach
+    * dispatch
     * 処理の振り分け
     * @author ito
     */
-    public function dispach()
+    public function dispatch()
     {
-        parent::dispach();
+        parent::dispatch();
 
         $destination = '';
         if (

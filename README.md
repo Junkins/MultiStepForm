@@ -89,7 +89,7 @@ class TopicsController extends Controller
     */
     public function add()
     {
-        $this->MultiStepForm->dispach();
+        $this->MultiStepForm->dispatch();
     }
 
     /**
@@ -237,7 +237,7 @@ class TopicsController extends Controller
         ]);
         
     
-        $this->MultiStepForm->dispach();
+        $this->MultiStepForm->dispatch();
     }
 ```
 
@@ -279,11 +279,11 @@ class TopicsController extends Controller
     */
     public function add()
     {
-        $this->MultiStepForm->dispach();
+        $this->MultiStepForm->dispatch();
         
         $form = new Form();
         $this->ModelLessMultiStepForm->setForm($form);
-        $this->ModelLessMultiStepForm->dispach();
+        $this->ModelLessMultiStepForm->dispatch();
     }
     
     /**
