@@ -190,8 +190,8 @@ class MultiStepFormCoreComponent extends Component
     {
         if ( $this->request->is('post') ) {
 
-            if ( method_exists($this->controller, 'beforeDispach') ) {
-                $this->controller->beforeDispach();
+            if ( method_exists($this->controller, 'beforeDispatch') ) {
+                $this->controller->beforeDispatch();
             }
 
             $actionConfig = $this->getActionConfig();
