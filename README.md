@@ -20,8 +20,8 @@ class AppFormHelper extends FormHelper
     use MultiStepFormHelperTrait;
     
     // Submit用のボタン名称設定
-    public $nextlabel = '確認';    
-    public $backlabel = '戻る';
+    public $nextLabel = '確認';    
+    public $backLabel = '戻る';
     
 }
 ```
@@ -89,7 +89,7 @@ class TopicsController extends Controller
     */
     public function add()
     {
-        $this->MultiStepForm->dispach();
+        $this->MultiStepForm->dispatch();
     }
 
     /**
@@ -135,26 +135,26 @@ class TopicsController extends Controller
 // 次の画面に進むためのボタン表示
 // 第一引数は設置する画面名
 // 第二引数はその他の設定
-// nextlabel：ボタン名
+// nextLabel：ボタン名
 // nextClass：ボタンのクラス
 <?= $this->Form->next(); ?>
 <?= $this->Form->next('add_input'); ?>
 <?= $this->Form->next('add_input', [
-    'nextlabel' => '次へ'
+    'nextLabel' => '次へ'
 ]); ?>
 OR
 // 次の画面もしくは、前の画面に進むためのボタン表示
 // 第一引数は設置する画面名
 // 第二引数はその他の設定
-// nextlabel：ボタン名
-// backlabel：ボタン名
+// nextLabel：ボタン名
+// backLabel：ボタン名
 // nextClass：ボタンのクラス
 // backClass：ボタンのクラス
 <?= $this->Form->nextOrBack(); ?>
 <?= $this->Form->nextOrBack('add_input'); ?>
 <?= $this->Form->nextOrBack('add_input', [
-    'nextlabel' => '次へ',
-    'backlabel' => '戻る',
+    'nextLabel' => '次へ',
+    'backLabel' => '戻る',
 ]); ?>
 ```
 
@@ -237,7 +237,7 @@ class TopicsController extends Controller
         ]);
         
     
-        $this->MultiStepForm->dispach();
+        $this->MultiStepForm->dispatch();
     }
 ```
 
@@ -279,11 +279,11 @@ class TopicsController extends Controller
     */
     public function add()
     {
-        $this->MultiStepForm->dispach();
+        $this->MultiStepForm->dispatch();
         
         $form = new Form();
         $this->ModelLessMultiStepForm->setForm($form);
-        $this->ModelLessMultiStepForm->dispach();
+        $this->ModelLessMultiStepForm->dispatch();
     }
     
     /**

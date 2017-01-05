@@ -7,7 +7,6 @@ use Cake\ORM\Association;
 
 class NotUseSetterMarshaller extends Marshaller
 {
-
     /**
     * publish
     *
@@ -19,6 +18,7 @@ class NotUseSetterMarshaller extends Marshaller
 
         $entityClass = $this->_table->entityClass();
         $entity = new $entityClass($data, ['useSetters' => false]);
+        $entity->source($this->_table->registryAlias());
 
         foreach ($data as $key => $value) {
             if (!isset($propertyMap[$key])) {
@@ -48,12 +48,13 @@ class NotUseSetterMarshaller extends Marshaller
         if (in_array($assoc->type(), $types)) {
             $targetTable = $assoc->target();
             $entityClass = $targetTable->entityClass();
-            return new $entityClass($value, ['useSetters' => false]);
+            $entity = new $entityClass($value, ['useSetters' => false]);
+            $entity->source($this->_table->registryAlias());
+            return $entity;
         }
 
         if ($assoc->type() === Association::MANY_TO_MANY) {
-            // @todo
-            return $this->publisBelongsToMany($assoc, $value, (array)$options);
+            return $this->publisBelongsToMany($assoc, $value['_ids']);
         }
 
         // @todo
@@ -65,9 +66,20 @@ class NotUseSetterMarshaller extends Marshaller
     *
     * @author ito
     */
-    protected function publisBelongsToMany($assoc, $value, $options)
+    protected function publisBelongsToMany($assoc, $ids)
     {
-        return null;
+        if (empty($ids)) {
+            return [];
+        }
+
+        $target = $assoc->target();
+        $primaryKey = (array)$target->primaryKey();
+        $primaryKey = array_map([$target, 'aliasField'], $primaryKey);
+        $filter = [$primaryKey[0] . ' IN' => $ids];
+
+        $query = $target->find();
+        $query->where($filter);
+        return $query->toArray();
     }
 
     /**
@@ -82,7 +94,9 @@ class NotUseSetterMarshaller extends Marshaller
 
         $entities = [];
         foreach ($data as $key => $value) {
-            $entities[] = new $entityClass($value, ['useSetters' => false]);
+            $entity = new $entityClass($value, ['useSetters' => false]);
+            $entity->source($this->_table->registryAlias());
+            $entities[] = $entity;
         }
 
         return $entities;
