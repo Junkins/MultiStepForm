@@ -6,6 +6,9 @@ use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
 use Cake\Utility\Security;
 
+/**
+ * MultiStepFormCoreComponent
+ */
 class MultiStepFormCoreComponent extends Component
 {
     public $hiddenKey = 'hidden_key';
@@ -386,34 +389,6 @@ class MultiStepFormCoreComponent extends Component
     protected function writeData($sessionKey, $data)
     {
         $this->session->write($sessionKey, $data);
-    }
-
-    /**
-    * mergeData
-    * リクエストデータとセッションデータのマージ
-    * @author ito
-    */
-    protected function mergeData()
-    {
-        $requestData = $this->request->data;
-        $sessionKey = $requestData[$this->hiddenKey];
-        $sessionData = $this->readData($sessionKey);
-
-        // リクエストデータから余計なデータを削除する。
-        // sessionKeyを取得したのちにフィルターをかける
-        $requestData = $this->filterData($requestData);
-
-        $writeData = [];
-        if (!empty($sessionData)) {
-            $writeData = $sessionData;
-            foreach ($requestData as $field => $value) {
-                $writeData[$field] = $value;
-            }
-        } else {
-            $writeData = $requestData;
-        }
-
-        $this->writeData($sessionKey, $writeData);
     }
 
     /**

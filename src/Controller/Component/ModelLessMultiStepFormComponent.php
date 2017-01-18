@@ -7,13 +7,14 @@ use Cake\Validation\Validation;
 use MultiStepForm\ORM\NotUseSetterMarshaller;
 use MultiStepForm\Controller\Component\MultiStepFormCoreComponent;
 
+/**
+ * ModelLessMultiStepFormComponent
+ */
 class ModelLessMultiStepFormComponent extends MultiStepFormCoreComponent
 {
     /**
-     * Initialize properties.
-     *
-     * @param array $actionConfig The actionConfig data.
-     * @return void
+     * initialize
+     * @author ito
      */
     public function initialize(array $config)
     {
@@ -88,12 +89,39 @@ class ModelLessMultiStepFormComponent extends MultiStepFormCoreComponent
 
     /**
     * validation
-    *
     * @author ito
     */
     protected function validation()
     {
         $this->Form->validate($this->request->data);
         return empty($this->Form->errors());
+    }
+
+    /**
+    * mergeData
+    * リクエストデータとセッションデータのマージ
+    * @author ito
+    */
+    protected function mergeData()
+    {
+        $requestData = $this->request->data;
+        $sessionKey = $requestData[$this->hiddenKey];
+        $sessionData = $this->readData($sessionKey);
+
+        // リクエストデータから余計なデータを削除する。
+        // sessionKeyを取得したのちにフィルターをかける
+        $requestData = $this->filterData($requestData);
+
+        $writeData = [];
+        if (!empty($sessionData)) {
+            $writeData = $sessionData;
+            foreach ($requestData as $field => $value) {
+                $writeData[$field] = $value;
+            }
+        } else {
+            $writeData = $requestData;
+        }
+
+        $this->writeData($sessionKey, $writeData);
     }
 }
