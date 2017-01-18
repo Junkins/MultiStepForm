@@ -1,10 +1,12 @@
 <?php
-
 namespace MultiStepForm\ORM;
 
 use Cake\ORM\Marshaller;
 use Cake\ORM\Association;
 
+/**
+ * NotUseSetterMarshaller
+ */
 class NotUseSetterMarshaller extends Marshaller
 {
 
@@ -18,8 +20,10 @@ class NotUseSetterMarshaller extends Marshaller
         $propertyMap = $this->_buildPropertyMap($data, $options);
 
         $entityClass = $this->_table->entityClass();
-        $entity = new $entityClass($data, ['useSetters' => false]);
-        $entity->source($this->_table->registryAlias());
+        $entity = new $entityClass($data, [
+            'useSetters' => false,
+            'source' => $this->_table->registryAlias()
+        ]);
 
         foreach ($data as $key => $value) {
             if (isset($propertyMap[$key])) {
@@ -52,8 +56,10 @@ class NotUseSetterMarshaller extends Marshaller
         if (in_array($assoc->type(), $types)) {
             $targetTable = $assoc->target();
             $entityClass = $targetTable->entityClass();
-            $entity = new $entityClass($value, ['useSetters' => false]);
-            $entity->source($this->_table->registryAlias());
+            $entity = new $entityClass($value, [
+                'useSetters' => false,
+                'source'     => $this->_table->registryAlias()
+            ]);
             return $entity;
         }
 
@@ -98,8 +104,10 @@ class NotUseSetterMarshaller extends Marshaller
 
         $entities = [];
         foreach ($data as $key => $value) {
-            $entity = new $entityClass($value, ['useSetters' => false]);
-            $entity->source($this->_table->registryAlias());
+            $entity = new $entityClass($value, [
+                'useSetters' => false,
+                'source'     => $this->_table->registryAlias()
+            ]);
             $entities[] = $entity;
         }
 

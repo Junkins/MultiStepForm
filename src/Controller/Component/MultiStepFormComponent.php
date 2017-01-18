@@ -6,6 +6,9 @@ use Cake\Validation\Validation;
 use MultiStepForm\ORM\NotUseSetterMarshaller;
 use MultiStepForm\Controller\Component\MultiStepFormCoreComponent;
 
+/**
+ * MultiStepFormComponent
+ */
 class MultiStepFormComponent extends MultiStepFormCoreComponent
 {
     /**
@@ -120,7 +123,6 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
 
     /**
     * validation
-    *
     * @author ito
     */
     protected function validation()
@@ -181,7 +183,6 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
 
     /**
     * dehydration
-    *
     * @author ito
     */
     protected function dehydration()
@@ -213,12 +214,68 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
     }
 
     /**
-     * handleNewEntity
-     *
-     *
+    * mergeData
+    * リクエストデータとセッションデータのマージ
+    * @author ito
+    */
+    protected function mergeData()
+    {
+        $requestData = $this->request->data;
+        $sessionKey = $requestData[$this->hiddenKey];
+        $sessionData = $this->readData($sessionKey);
+
+        $entity = $this->handleNewEntity($requestData);
+        if (!$this->isMultiple()) {
+            $requestData = $this->fieldAdjustment($requestData);
+        } else {
+            foreach ($requestData as $key => $data) {
+                $requestData[$key] = $this->fieldAdjustment($data);
+            }
+        }
+
+        // リクエストデータから余計なデータを削除する。
+        // sessionKeyを取得したのちにフィルターをかける
+        $requestData = $this->filterData($requestData);
+
+        $writeData = [];
+        if (!empty($sessionData)) {
+            $writeData = $sessionData;
+            foreach ($requestData as $field => $value) {
+                $writeData[$field] = $value;
+            }
+        } else {
+            $writeData = $requestData;
+        }
+
+        $this->writeData($sessionKey, $writeData);
+    }
+
+    /**
+     * fieldAdjustment
      * @author ito
      */
-    private function handleNewEntity($data)
+    private function fieldAdjustment($data)
+    {
+        $sampleEntity = $this->handleNewEntity($data);
+        $sampleArray  = $sampleEntity->toArray();
+        $setFields    = array_diff_key($sampleArray, $data);
+        $unsetFields  = array_diff_key($data, $sampleArray);
+        // 別フィールドへのset()を考慮して、set()した際に新規に作られたフィールドをセット
+        foreach ($setFields as $key => $value) {
+            $data[$key] = $value;
+        }
+        // set()した際に削除されたフィールドをアンセット
+        foreach (array_keys($unsetFields) as $key) {
+            unset($data[$key]);
+        }
+        return $data;
+    }
+
+    /**
+     * handleNewEntity
+     * @author ito
+     */
+    protected function handleNewEntity($data)
     {
         $actionConfig   = $this->getActionConfig();
         $validate       = $actionConfig['validate'];
@@ -226,7 +283,7 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
         $sessionKey     = $data[$this->hiddenKey];
         $newMethod      = ($this->isMultiple()) ? 'newEntities' : 'newEntity';
         $data           = ($this->isMultiple()) ? $data[$this->Table->alias()] : $data;
-        $entity         =  $this->Table->{$newMethod}($data, ['validate' => $validate]);
+        $entity         = $this->Table->{$newMethod}($data, ['validate' => $validate]);
 
         if (is_array($entity)) {
             $entity[$this->hiddenKey] = $sessionKey;
