@@ -268,6 +268,10 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
         foreach (array_keys($unsetFields) as $key) {
             unset($data[$key]);
         }
+        // バリデーションエラーになったフィールドをセット
+        foreach ($sampleEntity->invalid() as $key => $value) {
+            $data[$key] = $value;
+        }
         return $data;
     }
 
