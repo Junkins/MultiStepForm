@@ -191,7 +191,7 @@ class MultiStepFormCoreComponent extends Component
      */
     public function dispatch()
     {
-        if ( $this->request->is('post') ) {
+        if ( $this->request->is('post') || $this->request->is('put') ) {
 
             if ( method_exists($this->controller, 'beforeDispatch') ) {
                 $this->controller->beforeDispatch();
