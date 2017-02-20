@@ -112,13 +112,18 @@ class MultiStepFormCoreComponent extends Component
         return $actionConfig;
     }
 
+    ################################################################
+
+    // setConfig/getConfigが新たにできたのでメソッドを変更する
     /**
     * setConfig
+    * Cake3.4からDeclarationエラーが出るので別メソッドに逃がす。そのうち非推奨にする
+    * Declarationエラー回避様に不要な第二引数/第三引数を設定か
     * @author ito
     */
-    public function setConfig($actionConfig)
+    public function setConfig($actionConfig, $value = NULL, $merge = true)
     {
-        $this->actionConfig = $actionConfig;
+        $this->setConfigMutliStep($actionConfig);
     }
 
     /**
@@ -127,16 +132,16 @@ class MultiStepFormCoreComponent extends Component
      */
     public function insertConfig($path, $value)
     {
-        $this->actionConfig = Hash::insert($this->actionConfig, $path, $value);
+        $this->insertConfigMutliStep($path, $value);
     }
 
     /**
-     * insertConfig
+     * mergeConfig
      * @author ito
      */
     public function mergeConfig($merge)
     {
-        $this->actionConfig = Hash::merge($this->actionConfig, $merge);
+        $this->mergeConfigMutliStep($merge);
     }
 
     /**
@@ -146,12 +151,54 @@ class MultiStepFormCoreComponent extends Component
     */
     public function getConfig($here = '')
     {
+        return $this->getConfigMutliStep($here);
+    }
+
+    ################################################################
+
+    // getConfig/setConfigなどのメソッドを切り替え
+    /**
+    * setConfigMutlistep
+    * @author ito
+    */
+    public function setConfigMutliStep($actionConfig)
+    {
+        $this->actionConfig = $actionConfig;
+    }
+
+    /**
+     * insertConfigMutliStep
+     * @author ito
+     */
+    public function insertConfigMutliStep($path, $value)
+    {
+        $this->actionConfig = Hash::insert($this->actionConfig, $path, $value);
+    }
+
+    /**
+     * mergeConfigMutliStep
+     * @author ito
+     */
+    public function mergeConfigMutliStep($merge)
+    {
+        $this->actionConfig = Hash::merge($this->actionConfig, $merge);
+    }
+
+    /**
+    * getConfigMutliStep
+    *
+    * @author ito
+    */
+    public function getConfigMutliStep($here = '')
+    {
         if (empty($here)) {
             return $this->actionConfig;
         }
 
         return $this->actionConfig[$here];
     }
+
+    ################################################################
 
     /**
     * getActionConfig
