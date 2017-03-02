@@ -20,7 +20,7 @@ class AppFormHelper extends FormHelper
     use MultiStepFormHelperTrait;
     
     // Submit用のボタン名称設定
-    public $nextlabel = '確認';    
+    public $nextlabel = '確認';
     public $backlabel = '戻る';
     
 }
@@ -202,7 +202,7 @@ class TopicsController extends Controller
         $this->MultiStepForm->setTable('Projects');
 
         // デフォルトの設定を全て上書きする場合
-        $this->MultiStepForm->setConfig([
+        $this->MultiStepForm->setConfigMutliStep([
             'edit_first_input' => [
                 'id' => $id,
                 'back' => false,
@@ -215,7 +215,7 @@ class TopicsController extends Controller
                 'id' => $id,
                 'back' => 'edit_first_input',
                 'next' => 'edit_third_input',
-                'validate' => default',
+                'validate' => 'default',
                 'multiple' => false,
                 'associated' => []
             ],
@@ -226,11 +226,11 @@ class TopicsController extends Controller
                 'validate' => 'default',
                 'multiple' => false,
                 'associated' => []
-            ],            
+            ],
         ]);
         
         // デフォルトの設定を一部上書きする場合
-        $this->MultiStepForm->mergeConfig([
+        $this->MultiStepForm->mergeConfigMutliStep([
             'edit_input' => [
                 'id' => $id
             ]
