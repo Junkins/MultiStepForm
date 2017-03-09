@@ -270,6 +270,10 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
         }
         // バリデーションエラーになったフィールドをセット
         foreach ($sampleEntity->invalid() as $key => $value) {
+            // ファイル形式のデータ場合、フィールドにセットしない
+            if ($this->isFileData($value)) {
+                continue;
+            }
             $data[$key] = $value;
         }
         return $data;
@@ -304,5 +308,26 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
     {
         $actionConfig = $this->getActionConfig();
         return (isset($actionConfig['multiple']) && $actionConfig['multiple']);
+    }
+
+    /**
+     * isFileData
+     * @author ito
+     */
+    private function isFileData($data)
+    {
+        if ( !is_array($data) ) {
+            return false;
+        }
+
+        $result = (
+            array_key_exists('name', $data) &&
+            array_key_exists('type', $data) &&
+            array_key_exists('tmp_name', $data) &&
+            array_key_exists('error', $data) &&
+            array_key_exists('size', $data)
+        );
+
+        return $result;
     }
 }
