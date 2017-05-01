@@ -247,18 +247,23 @@ class TopicsController extends Controller
 <?php
 namespace App\Controller;
 
+use App\Controller\AppController;
+use App\Form\ContactsForm;
+use Cake\Event\Event;
 use MultiStepForm\Controller\Traits\ModelLessMultiStepFormTrait;
 
 /**
-* TopicsController
-*/
-class TopicsController extends Controller
+ * ContactsController
+ */
+class ContactsController extends AppController
 {
     use ModelLessMultiStepFormTrait;
-    
+
     /**
-    * initialize
-    */
+     * initialize
+     *
+     * @return void
+     */
     public function initialize()
     {
         parent::initialize();
@@ -266,62 +271,72 @@ class TopicsController extends Controller
         $this->loadComponent('MultiStepForm.ModelLessMultiStepForm', [
             'whitelist' => [
                 'index',
-                'view',
-                'add',
-                'edit',
-                'delete'
+                'thanks'
             ]
         ]);
     }
-    
+
     /**
-    * add
-    */
-    public function add()
+     * index
+     *
+     * @return void
+     */
+    public function index()
     {
-        $this->MultiStepForm->dispatch();
-        
-        $form = new Form();
+        $form = new ContactsForm();
         $this->ModelLessMultiStepForm->setForm($form);
         $this->ModelLessMultiStepForm->dispatch();
     }
-    
+
     /**
-    * add_input
-    */
-    public function add_input()
+     * index_input
+     *
+     * @return void
+     */
+    public function index_input()
     {
-        $topic = $this->ModelLessMultiStepForm->getData();
-        $this->set(compact('topic'));
-        $this->render('add_input');
+        $form = $this->ModelLessMultiStepForm->getForm();
+        $this->set(compact('form'));
+        $this->render('index');
     }
 
     /**
-    * add_confirm
-    */
-    public function add_confirm()
+     * index_confirm
+     *
+     * @return void
+     */
+    public function index_confirm()
     {
-        $topic = $this->ModelLessMultiStepForm->getData();
-        $this->set(compact('topic'));
-        $this->render('add_confirm');
+        $form = $this->ModelLessMultiStepForm->getForm();
+        $data = $this->ModelLessMultiStepForm->getData();
+        $this->set(compact('form', 'data'));
+        $this->render('index_confirm');
     }
 
     /**
-    * add_finish
-    */
-    public function add_finish()
+     * index_finish
+     *
+     * @return void
+     */
+    public function index_finish()
     {
         $data = $this->ModelLessMultiStepForm->getData();
         $form = $this->ModelLessMultiStepForm->getForm();
-        if($form->execute($data)){
-            $this->Flash->success('Success!');
+        if ($form->execute($data)) {
+            $this->redirect(['action' => 'thanks']);
         } else {
-            $this->Flash->error('Error!');
+            $this->redirect(['action' => 'index']);
         }
-
-        $this->redirect(['action' => 'index']);
     }
 
+    /**
+     * thanks
+     *
+     * @return void
+     */
+    public function thanks()
+    {
+    }
 }
 ```
 
