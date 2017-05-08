@@ -54,6 +54,12 @@ class ModelLessMultiStepFormComponent extends MultiStepFormCoreComponent
             $this->request->is('post') ||
             $this->request->is('put')
         ) {
+
+            // Post Max Size Overの場合
+            if ($this->isOverPostMaxSize()) {
+                return $this->redirectFisrt();
+            }
+
             // POSTリクエストの際の動き
             $destination = $this->whenPost();
         } else {
