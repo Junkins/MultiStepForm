@@ -240,6 +240,11 @@ class MultiStepFormCoreComponent extends Component
     {
         if ( $this->request->is('post') || $this->request->is('put') ) {
 
+            // Post Max Sizeをオーバーしている場合は処理を行わない
+            if ($this->isOverPostMaxSize()) {
+                return;
+            }
+
             if ( method_exists($this->controller, 'beforeDispatch') ) {
                 $this->controller->beforeDispatch();
             }
@@ -348,6 +353,18 @@ class MultiStepFormCoreComponent extends Component
     }
 
     /**
+    * isOverPostMaxSize
+    * @author ito
+    */
+    protected function isOverPostMaxSize()
+    {
+        return (
+            ($this->request->is('post') || $this->request->is('put'))
+            && empty($this->request->data)
+        );
+    }
+
+    /**
      * isWhitelist
      * @author ito
      */
@@ -370,6 +387,16 @@ class MultiStepFormCoreComponent extends Component
         $this->controller->set('here', $first);
         $this->request->data = $this->getData();
         return $this->controller->{$first}();
+    }
+
+    /**
+     * redirectFisrt
+     * @author ito
+     */
+    protected function redirectFisrt()
+    {
+        $this->controller->Flash->error(__('It is over the post max size'));
+        return $this->controller->redirect($this->controller->action);
     }
 
     /**
@@ -401,7 +428,6 @@ class MultiStepFormCoreComponent extends Component
 
     /**
     * goNext
-    *
     * @author ito
     */
     protected function goNext()
