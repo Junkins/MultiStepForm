@@ -262,18 +262,9 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
      */
     private function fieldAdjustment($data)
     {
+        // Entity化した際に発生した差分を吸収
+        $data = $this->adjustmentDifference($data);
         $sampleEntity = $this->handleNewEntity($data);
-        $sampleArray  = $sampleEntity->toArray();
-        $setFields    = array_diff_key($sampleArray, $data);
-        $unsetFields  = array_diff_key($data, $sampleArray);
-        // 別フィールドへのset()を考慮して、set()した際に新規に作られたフィールドをセット
-        foreach ($setFields as $key => $value) {
-            $data[$key] = $value;
-        }
-        // set()した際に削除されたフィールドをアンセット
-        foreach (array_keys($unsetFields) as $key) {
-            unset($data[$key]);
-        }
         // バリデーションエラーになったフィールドをセット
         foreach ($sampleEntity->invalid() as $key => $value) {
             // ファイル形式のデータ場合、フィールドにセットしない
@@ -286,6 +277,55 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
     }
 
     /**
+     * adjustmentDifference
+     * @author ito
+     */
+    private function adjustmentDifference($data)
+    {
+        $adjustment = function($data) use (&$adjustment)
+        {
+            foreach ($data as $key => $value) {
+                if (is_array($value)) {
+                    // hasmanyか確認
+                    $associationClass = $this->Table->associations()->get(str_replace('_', '', $key));
+                    if (
+                        !is_object($associationClass) ||
+                        get_class($associationClass) !== 'Cake\ORM\Association\HasMany'
+                    ) {
+                        continue;
+                    }
+                    $tmpTable = $this->Table;
+                    $this->Table = TableRegistry::get($associationClass->getName());
+                    foreach ($value as $innerKey => $innerValue) {
+                        if (is_array($innerValue)) {
+                            $data[$key][$innerKey] = $adjustment($innerValue);
+                        }
+                    }
+                    $this->Table = $tmpTable;
+                }
+            }
+
+            $sampleEntity = $this->handleNewEntity($data);
+            $sampleArray  = $sampleEntity->toArray();
+            $setFields    = array_diff_key($sampleArray, $data);
+            $unsetFields  = array_diff_key($data, $sampleArray);
+
+            // 別フィールドへのset()を考慮して、set()した際に新規に作られたフィールドをセット
+            foreach ($setFields as $key => $value) {
+                $data[$key] = $value;
+            }
+            // set()した際に削除されたフィールドをアンセット
+            foreach (array_keys($unsetFields) as $key) {
+                unset($data[$key]);
+            }
+
+            return $data;
+        };
+
+        return $adjustment($data);
+    }
+
+    /**
      * handleNewEntity
      * @author ito
      */
@@ -294,13 +334,15 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
         $actionConfig   = $this->getActionConfig();
         $validate       = $actionConfig['validate'];
 
-        $sessionKey     = $data[$this->hiddenKey];
         $newMethod      = ($this->isMultiple()) ? 'newEntities' : 'newEntity';
         $data           = ($this->isMultiple()) ? $data[$this->Table->alias()] : $data;
         $entity         = $this->Table->{$newMethod}($data, ['validate' => $validate]);
 
-        if (is_array($entity)) {
-            $entity[$this->hiddenKey] = $sessionKey;
+        if (!empty($data[$this->hiddenKey])) {
+            $sessionKey = $data[$this->hiddenKey];
+            if (is_array($entity)) {
+                $entity[$this->hiddenKey] = $sessionKey;
+            }
         }
 
         return $entity;
