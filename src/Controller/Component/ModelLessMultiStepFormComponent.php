@@ -99,7 +99,16 @@ class ModelLessMultiStepFormComponent extends MultiStepFormCoreComponent
     */
     protected function validation()
     {
-        $this->Form->validate($this->request->data);
+        $actionConfig = $this->getActionConfig();
+        $validate = $actionConfig['validate'];
+
+        // バリデータFalseの場合はバリデーション行わずにTrueを返す
+        if (!$validate) {
+            return true;
+        }
+
+        $requestData = $this->request->data;
+        $this->Form->validate($requestData);
         return empty($this->Form->errors());
     }
 

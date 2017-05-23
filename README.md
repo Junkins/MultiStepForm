@@ -13,16 +13,20 @@ MultiStepForm is Plugin to help your multi step form.
 AppFormHelper
 ```
 <?php
+namespace App\View\Helper;
+
 use MultiStepForm\View\Helper\Traits\MultiStepFormHelperTrait;
 
 class AppFormHelper extends FormHelper
 {
     use MultiStepFormHelperTrait;
-    
+
     // Submit用のボタン名称設定
-    public $nextlabel = '確認';
-    public $backlabel = '戻る';
-    
+    public $nextLabel = '確認';
+    public $backLabel = '戻る';
+    public $nextClass = '';
+    public $backClass = '';
+
 }
 ```
 
@@ -65,7 +69,7 @@ use MultiStepForm\Controller\Traits\MultiStepFormTrait;
 class TopicsController extends Controller
 {
     use MultiStepFormTrait;
-    
+
     /**
     * initialize
     */
@@ -173,7 +177,7 @@ use MultiStepForm\Controller\Traits\MultiStepFormTrait;
 class TopicsController extends Controller
 {
     use MultiStepFormTrait;
-    
+
     /**
     * initialize
     */
@@ -197,7 +201,7 @@ class TopicsController extends Controller
     */
     public function edit($id = null)
     {
-        
+
         // $modelClass以外のTableを使用する場合
         $this->MultiStepForm->setTable('Projects');
 
@@ -228,15 +232,19 @@ class TopicsController extends Controller
                 'associated' => []
             ],
         ]);
-        
+
         // デフォルトの設定を一部上書きする場合
         $this->MultiStepForm->mergeConfigMutliStep([
             'edit_input' => [
                 'id' => $id
             ]
         ]);
-        
-    
+
+        // Hash パス構文で設定を上書きする場合
+        $this->MultiStepForm->insertConfigMutliStep('edit_second_input.validate', false);
+        $this->MultiStepForm->insertConfigMutliStep('{*}.validate', false);
+
+
         $this->MultiStepForm->dispatch();
     }
 ```
@@ -339,4 +347,3 @@ class ContactsController extends AppController
     }
 }
 ```
-
