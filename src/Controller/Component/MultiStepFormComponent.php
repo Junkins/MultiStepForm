@@ -262,26 +262,6 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
      */
     private function fieldAdjustment($data)
     {
-        // Entity化した際に発生した差分を吸収
-        $data = $this->adjustmentDifference($data);
-        $sampleEntity = $this->handleNewEntity($data);
-        // バリデーションエラーになったフィールドをセット
-        foreach ($sampleEntity->invalid() as $key => $value) {
-            // ファイル形式のデータ場合、フィールドにセットしない
-            if ($this->isFileData($value)) {
-                continue;
-            }
-            $data[$key] = $value;
-        }
-        return $data;
-    }
-
-    /**
-     * adjustmentDifference
-     * @author ito
-     */
-    private function adjustmentDifference($data)
-    {
         $adjustment = function($data) use (&$adjustment)
         {
             foreach ($data as $key => $value) {
@@ -319,10 +299,20 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
                 unset($data[$key]);
             }
 
+            // バリデーションエラーになったフィールドをセット
+            foreach ($sampleEntity->invalid() as $key => $value) {
+                // ファイル形式のデータ場合、フィールドにセットしない
+                if ($this->isFileData($value)) {
+                    continue;
+                }
+                $data[$key] = $value;
+            }
+
             return $data;
         };
 
         return $adjustment($data);
+
     }
 
     /**
