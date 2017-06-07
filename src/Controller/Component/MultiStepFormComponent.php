@@ -229,8 +229,6 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
         $requestData = $this->request->data;
         $sessionKey = $requestData[$this->hiddenKey];
         $sessionData = $this->readData($sessionKey);
-
-        $entity = $this->handleNewEntity($requestData);
         if (!$this->isMultiple()) {
             $requestData = $this->fieldAdjustment($requestData);
         } else {
@@ -284,6 +282,15 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
                     $this->Table = $tmpTable;
                 }
             }
+
+            $data    = new \ArrayObject($data);
+            if (method_exists($this->Table, 'beforeMarshal')) {
+                // バリデーションにかける beforeMarshal を実行
+                $options = new \ArrayObject([]);
+                $this->Table->dispatchEvent('Model.beforeMarshal', compact('data', 'options'));
+            }
+            // ArrayObjectから配列に戻す
+            $data = $data->getArrayCopy();
 
             $sampleEntity = $this->handleNewEntity($data);
             $sampleArray  = $sampleEntity->toArray();
