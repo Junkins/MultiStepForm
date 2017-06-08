@@ -260,8 +260,18 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
      */
     private function fieldAdjustment($data)
     {
+        $sourceTable = $this->Table;
         $adjustment = function($data) use (&$adjustment)
         {
+            $data    = new \ArrayObject($data);
+            if (method_exists($this->Table, 'beforeMarshal')) {
+                // バリデーションにかける beforeMarshal を実行
+                $options = new \ArrayObject([]);
+                $this->Table->dispatchEvent('Model.beforeMarshal', compact('data', 'options'));
+            }
+            // ArrayObjectから配列に戻す
+            $data = $data->getArrayCopy();
+
             foreach ($data as $key => $value) {
                 if (is_array($value)) {
                     // hasmanyか確認
@@ -282,15 +292,6 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
                     $this->Table = $tmpTable;
                 }
             }
-
-            $data    = new \ArrayObject($data);
-            if (method_exists($this->Table, 'beforeMarshal')) {
-                // バリデーションにかける beforeMarshal を実行
-                $options = new \ArrayObject([]);
-                $this->Table->dispatchEvent('Model.beforeMarshal', compact('data', 'options'));
-            }
-            // ArrayObjectから配列に戻す
-            $data = $data->getArrayCopy();
 
             $sampleEntity = $this->handleNewEntity($data);
             $sampleArray  = $sampleEntity->toArray();
@@ -318,8 +319,9 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
             return $data;
         };
 
-        return $adjustment($data);
-
+        $dataAdjustmented = $adjustment($data);
+        $this->Table = $sourceTable;
+        return $dataAdjustmented;
     }
 
     /**
