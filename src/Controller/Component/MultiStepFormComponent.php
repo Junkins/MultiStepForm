@@ -229,12 +229,10 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
         $requestData = $this->request->data;
         $sessionKey = $requestData[$this->hiddenKey];
         $sessionData = $this->readData($sessionKey);
-        if (!$this->isMultiple()) {
-            $requestData = $this->fieldAdjustment($requestData);
+        if ($this->isMultiple() && isset($requestData[$this->Table->alias()])) {
+            $requestData = $this->fieldAdjustmentMultiple($requestData);
         } else {
-            foreach ($requestData as $key => $data) {
-                $requestData[$key] = $this->fieldAdjustment($data);
-            }
+            $requestData = $this->fieldAdjustment($requestData);
         }
 
         // リクエストデータから余計なデータを削除する。
@@ -271,7 +269,6 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
             }
             // ArrayObjectから配列に戻す
             $data = $data->getArrayCopy();
-
             foreach ($data as $key => $value) {
                 if (is_array($value)) {
                     // hasmanyか確認
@@ -325,6 +322,60 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
     }
 
     /**
+     * fieldAdjustmentMultiple
+     * @author ito
+     */
+    private function fieldAdjustmentMultiple($data)
+    {
+        $data    = new \ArrayObject($data);
+        if (method_exists($this->Table, 'beforeMarshal')) {
+            // バリデーションにかける beforeMarshal を実行
+            $options = new \ArrayObject([]);
+            $this->Table->dispatchEvent('Model.beforeMarshal', compact('data', 'options'));
+        }
+        // ArrayObjectから配列に戻す
+        $data = $data->getArrayCopy();
+
+        $dataMultiple[$this->Table->alias()] = $data[$this->Table->alias()];
+        unset($data[$this->Table->alias()]);
+        $dataMeta = $this->fieldAdjustment($data);
+
+        $sampleEntities = $this->handleNewEntity($dataMultiple);
+
+        foreach ($sampleEntities as $entityKey => $sampleEntity) {
+
+            $sampleArray  = $sampleEntity->toArray();
+            $sampleData   = $dataMultiple[$this->Table->alias()][$entityKey];
+            $setFields    = array_diff_key($sampleArray, $sampleData);
+            $unsetFields  = array_diff_key($sampleData, $sampleArray);
+
+            // 別フィールドへのset()を考慮して、set()した際に新規に作られたフィールドをセット
+            foreach ($setFields as $key => $value) {
+                $dataMultiple[$this->Table->alias()][$entityKey][$key] = $value;
+            }
+
+            // set()した際に削除されたフィールドをアンセット
+            foreach (array_keys($unsetFields) as $key) {
+                unset($dataMultiple[$this->Table->alias()][$entityKey][$key]);
+            }
+
+            // バリデーションエラーになったフィールドをセット
+            foreach ($sampleEntity->invalid() as $key => $value) {
+                // ファイル形式のデータ場合、フィールドにセットしない
+                if ($this->isFileData($value)) {
+                    continue;
+                }
+                $dataMultiple[$this->Table->alias()][$entityKey][$key] = $value;
+            }
+        }
+
+        $dataAdjustmented = $this->fieldAdjustment($dataMeta);
+        $dataAdjustmented[$this->Table->alias()] = $dataMultiple[$this->Table->alias()];
+        $this->Table = $sourceTable;
+        return $dataAdjustmented;
+    }
+
+    /**
      * handleNewEntity
      * @author ito
      */
@@ -333,10 +384,15 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
         $actionConfig   = $this->getActionConfig();
         $validate       = $actionConfig['validate'];
 
-        $newMethod      = ($this->isMultiple()) ? 'newEntities' : 'newEntity';
-        $data           = ($this->isMultiple()) ? $data[$this->Table->alias()] : $data;
-        $entity         = $this->Table->{$newMethod}($data, ['validate' => $validate]);
+        if ($this->isMultiple() && isset($data[$this->Table->alias()])) {
+            $newMethod = 'newEntities';
+            $data = $data[$this->Table->alias()];
+        } else {
+            $newMethod = 'newEntity';
+            $data = $data;
+        }
 
+        $entity = $this->Table->{$newMethod}($data, ['validate' => $validate]);
         if (!empty($data[$this->hiddenKey])) {
             $sessionKey = $data[$this->hiddenKey];
             if (is_array($entity)) {
