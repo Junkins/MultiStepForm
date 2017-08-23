@@ -206,7 +206,7 @@ class TopicsController extends Controller
         $this->MultiStepForm->setTable('Projects');
 
         // デフォルトの設定を全て上書きする場合
-        $this->MultiStepForm->setConfigMutliStep([
+        $this->MultiStepForm->setConfigMultiStep([
             'edit_first_input' => [
                 'id' => $id,
                 'back' => false,
@@ -234,15 +234,15 @@ class TopicsController extends Controller
         ]);
 
         // デフォルトの設定を一部上書きする場合
-        $this->MultiStepForm->mergeConfigMutliStep([
+        $this->MultiStepForm->mergeConfigMultiStep([
             'edit_input' => [
                 'id' => $id
             ]
         ]);
 
         // Hash パス構文で設定を上書きする場合
-        $this->MultiStepForm->insertConfigMutliStep('edit_second_input.validate', false);
-        $this->MultiStepForm->insertConfigMutliStep('{*}.validate', false);
+        $this->MultiStepForm->insertConfigMultiStep('edit_second_input.validate', false);
+        $this->MultiStepForm->insertConfigMultiStep('{*}.validate', false);
 
 
         $this->MultiStepForm->dispatch();
