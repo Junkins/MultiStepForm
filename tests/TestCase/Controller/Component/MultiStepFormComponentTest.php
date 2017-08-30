@@ -71,6 +71,7 @@ class MultiStepFormComponentTest extends TestCase
     public function test_dispatch_first_access()
     {
         // FIRST ACCESS
+        $this->Controller->request->env('REQUEST_METHOD', 'GET');
         $this->MultiStepForm->dispatch();
 
         $expected = [

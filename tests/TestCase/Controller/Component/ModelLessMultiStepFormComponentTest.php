@@ -51,6 +51,7 @@ class ModelLessMultiStepFormComponentTest extends TestCase
     {
         $this->ModelLessMultiStepForm->setForm($this->ModelLessTestForm);
         // FIRST ACCESS
+        $this->Controller->request->env('REQUEST_METHOD', 'GET');
         $this->ModelLessMultiStepForm->dispatch();
 
         $expected = [
