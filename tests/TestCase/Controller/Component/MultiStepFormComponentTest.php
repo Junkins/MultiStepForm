@@ -62,119 +62,216 @@ class MultiStepFormComponentTest extends TestCase
         parent::tearDown();
     }
 
+    ############################################################################
+    ### 正常系のテスト
     /**
-     * Test dispatch method
-     *
-     * @return void
+     * test_dispatch_first_access
+     * @author ito
      */
-    public function test_dispatchGet()
+    public function test_dispatch_first_access()
     {
-        // 初期アクセス
+        // FIRST ACCESS
         $this->MultiStepForm->dispatch();
-        // add_inputにアクセス
-        $this->assertEquals(true, $this->Controller->request->session()->read('add_input'));
-        $this->assertEquals(null, $this->Controller->request->session()->read('add_confirm'));
-        $this->assertEquals(null, $this->Controller->request->session()->read('add_finish'));
+
+        $expected = [
+            true,
+            null,
+            null
+        ];
+        $result = [
+            $this->Controller->request->session()->read('add_input'),
+            $this->Controller->request->session()->read('add_confirm'),
+            $this->Controller->request->session()->read('add_finish')
+        ];
+
+        $this->assertEquals($result, $expected);
     }
 
     /**
-     * Test dispatch method
-     *
-     * @return void
+     * test_dispatch_next_to_confirm
+     * @author ito
      */
-    public function test_dispatchPostMaxSizeError()
+    public function test_dispatch_next_to_confirm()
     {
-        // postとして挙動させる
-        $this->Controller->request->env('REQUEST_METHOD', 'POST');
-        // request->dataをセットしない = post_max_size_error
-        $this->MultiStepForm->dispatch();
-        // リダイレクトが走る
-        $headers = $this->Controller->response->getHeaders();
-        $this->assertTrue(array_key_exists('Location', $headers));
-    }
-
-    /**
-     * Test dispatch method
-     *
-     * @return void
-     */
-    public function test_dispatchNextValidationOk()
-    {
-        // postとして挙動させる
-        $this->Controller->request->env('REQUEST_METHOD', 'POST');
-        // request dataもいる
-        $postdata = $this->Controller->request->getParsedBody();
-        // とりあえず内部でエラーを出さないように必要最低限をセットする
-        $postdata['hidden_key'] = 'abcdef';
-        $postdata['here'] = 'add_input';
-        $postdata['next'] = 'next';
-        $postdata['name'] = 'name';
-
-        $this->Controller->request = $this->Controller->request->withParsedBody($postdata);
-
-        // $this->MultiStepForm->setTable('Posts');でのセットではdefaultのConnectionでアクセスをしようとするので
         $this->MultiStepForm->Table = $this->Posts;
+
+        // リクエストデータ準備
+        $this->Controller->request = $this->Controller->request->withParsedBody([
+            'hidden_key' => 'abcdef',
+            'here' => 'add_input',
+            'next' => 'next',
+            'name' => 'name'
+        ]);
+
+        // POST
+        $this->Controller->request->env('REQUEST_METHOD', 'POST');
         $this->MultiStepForm->dispatch();
-        // add_confirmにアクセス
-        $this->assertEquals(null, $this->Controller->request->session()->read('add_input'));
-        $this->assertEquals(true, $this->Controller->request->session()->read('add_confirm'));
-        $this->assertEquals(null, $this->Controller->request->session()->read('add_finish'));
+
+        $expected = [
+            null,
+            true,
+            null
+        ];
+        $result = [
+            $this->Controller->request->session()->read('add_input'),
+            $this->Controller->request->session()->read('add_confirm'),
+            $this->Controller->request->session()->read('add_finish')
+        ];
+
+        $this->assertEquals($result, $expected);
     }
 
     /**
-     * Test dispatch method
-     *
-     * @return void
+     * test_dispatch_next_to_finish
+     * @author ito
      */
-    public function test_dispatchNextValidationError()
+    public function test_dispatch_next_to_finish()
     {
-        // postとして挙動させる
-        $this->Controller->request->env('REQUEST_METHOD', 'POST');
-        // request dataもいる
-        $postdata = $this->Controller->request->getParsedBody();
-        // とりあえず内部でエラーを出さないように必要最低限をセットする
-        $postdata['hidden_key'] = 'abcdef';
-        $postdata['here'] = 'add_input';
-        $postdata['next'] = 'next';
-        // nameの必須チェックのバリデーションにかかる
-        $postdata['name'] = '';
-
-        $this->Controller->request = $this->Controller->request->withParsedBody($postdata);
-
-        // $this->MultiStepForm->setTable('Posts');でのセットではdefaultのConnectionでアクセスをしようとするので
         $this->MultiStepForm->Table = $this->Posts;
+
+        // リクエストデータ準備
+        $this->Controller->request = $this->Controller->request->withParsedBody([
+            'hidden_key' => 'abcdef',
+            'here' => 'add_input',
+            'next' => 'next',
+            'name' => 'name'
+        ]);
+
+        // POST
+        $this->Controller->request->env('REQUEST_METHOD', 'POST');
         $this->MultiStepForm->dispatch();
-        // add_inputにアクセス
-        $this->assertEquals(true, $this->Controller->request->session()->read('add_input'));
-        $this->assertEquals(null, $this->Controller->request->session()->read('add_confirm'));
-        $this->assertEquals(null, $this->Controller->request->session()->read('add_finish'));
+
+        // リクエストデータ準備
+        $this->Controller->request = $this->Controller->request->withParsedBody([
+            'hidden_key' => 'abcdef',
+            'here' => 'add_confirm',
+            'next' => 'next',
+            'name' => 'name'
+        ]);
+
+        // POST
+        $this->Controller->request->env('REQUEST_METHOD', 'POST');
+        $this->MultiStepForm->dispatch();
+
+        $expected = [
+            null,
+            true,
+            true
+        ];
+        $result = [
+            $this->Controller->request->session()->read('add_input'),
+            $this->Controller->request->session()->read('add_confirm'),
+            $this->Controller->request->session()->read('add_finish')
+        ];
+
+        $this->assertEquals($result, $expected);
     }
 
     /**
-     * Test dispatch method
-     *
-     * @return void
+     * test_dispatch_back_to_input
+     * @author ito
      */
-    public function test_dispatchBack()
+    public function test_dispatch_back_to_input()
     {
-        // postとして挙動させる
-        $this->Controller->request->env('REQUEST_METHOD', 'POST');
-        // request dataもいる
-        $postdata = $this->Controller->request->getParsedBody();
-        // とりあえず内部でエラーを出さないように必要最低限をセットする
-        $postdata['hidden_key'] = 'abcdef';
-        $postdata['here'] = 'add_confirm';
-        $postdata['back'] = 'back';
-
-        $this->Controller->request = $this->Controller->request->withParsedBody($postdata);
-
-        // $this->MultiStepForm->setTable('Posts');でのセットではdefaultのConnectionでアクセスをしようとするので
         $this->MultiStepForm->Table = $this->Posts;
+
+        // リクエストデータ準備
+        $this->Controller->request = $this->Controller->request->withParsedBody([
+            'hidden_key' => 'abcdef',
+            'here' => 'add_input',
+            'next' => 'next',
+            'name' => 'name'
+        ]);
+
+        // POST
+        $this->Controller->request->env('REQUEST_METHOD', 'POST');
         $this->MultiStepForm->dispatch();
-        // add_inputにアクセス
-        $this->assertEquals(true, $this->Controller->request->session()->read('add_input'));
-        $this->assertEquals(null, $this->Controller->request->session()->read('add_confirm'));
-        $this->assertEquals(null, $this->Controller->request->session()->read('add_finish'));
+
+        // リクエストデータ準備
+        $this->Controller->request = $this->Controller->request->withParsedBody([
+            'hidden_key' => 'abcdef',
+            'here' => 'add_confirm',
+            'back' => 'back',
+            'name' => 'name'
+        ]);
+        // POST
+        $this->Controller->request->env('REQUEST_METHOD', 'POST');
+        $this->MultiStepForm->dispatch();
+
+        $expected = [
+            true,
+            true,
+            null
+        ];
+        $result = [
+            $this->Controller->request->session()->read('add_input'),
+            $this->Controller->request->session()->read('add_confirm'),
+            $this->Controller->request->session()->read('add_finish')
+        ];
+
+        $this->assertEquals($result, $expected);
     }
 
+    ############################################################################
+    ### エラーのテスト
+    /**
+     * test_dispatch_next_to_confirm_validation_error
+     * @author ito
+     */
+    public function test_dispatch_next_to_confirm_validation_error()
+    {
+        $this->MultiStepForm->Table = $this->Posts;
+
+        // リクエストデータ準備
+        $this->Controller->request = $this->Controller->request->withParsedBody([
+            'hidden_key' => 'abcdef',
+            'here' => 'add_input',
+            'next' => 'next',
+            'name' => '' // nameの必須チェックのバリデーションにかかる
+        ]);
+
+        // POST
+        $this->Controller->request->env('REQUEST_METHOD', 'POST');
+        $this->MultiStepForm->dispatch();
+
+        $expected = [
+            true,
+            null,
+            null
+        ];
+        $result = [
+            $this->Controller->request->session()->read('add_input'),
+            $this->Controller->request->session()->read('add_confirm'),
+            $this->Controller->request->session()->read('add_finish')
+        ];
+
+        $this->assertEquals($result, $expected);
+    }
+
+    /**
+     * test_dispatch_next_to_confirm_postmaxsize_error
+     * @author ito
+     */
+    public function test_dispatch_next_to_confirm_postmaxsize_error()
+    {
+        $this->MultiStepForm->Table = $this->Posts;
+
+        // リクエストデータ準備しない = post_max_size_error
+        // POST
+        $this->Controller->request->env('REQUEST_METHOD', 'POST');
+        $this->MultiStepForm->dispatch();
+
+        $expected = [
+            null,
+            null,
+            null
+        ];
+        $result = [
+            $this->Controller->request->session()->read('add_input'),
+            $this->Controller->request->session()->read('add_confirm'),
+            $this->Controller->request->session()->read('add_finish')
+        ];
+
+        $this->assertEquals($result, $expected);
+    }
 }
