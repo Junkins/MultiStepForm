@@ -6,6 +6,12 @@
             "MultiStepForm\\": "src"
         }
     },
+    "require": {
+        "cakephp/cakephp": "3.*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "*"
+    },
     "autoload-dev": {
         "psr-4": {
             "MultiStepForm\\Test\\": "tests",

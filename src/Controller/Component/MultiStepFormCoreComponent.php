@@ -83,7 +83,7 @@ class MultiStepFormCoreComponent extends Component
      * setDefaultConfig
      * @author ito
      */
-    public function setDefaultConfig()
+    private function setDefaultConfig()
     {
         $actionConfig = null;
 
