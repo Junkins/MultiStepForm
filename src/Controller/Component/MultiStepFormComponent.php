@@ -327,6 +327,7 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
      */
     private function fieldAdjustmentMultiple($data)
     {
+        $sourceTable = $this->Table;
         $data    = new \ArrayObject($data);
         if (method_exists($this->Table, 'beforeMarshal')) {
             // バリデーションにかける beforeMarshal を実行
