@@ -26,22 +26,25 @@ class MultiStepFormCoreComponent extends Component
     */
     protected $defaultActionConfig = [
         'input'   => [
-            'back'       => false,
-            'next'       => 'confirm',
-            'validate'   => 'default',
-            'associated' => []
+            'back'                  => false,
+            'next'                  => 'confirm',
+            'validate'              => 'default',
+            'associated'            => [],
+            'validateAssociated'    => []
         ],
         'confirm' => [
-            'back'       => 'input',
-            'next'       => 'finish',
-            'validate'   => false,
-            'associated' => []
+            'back'                  => 'input',
+            'next'                  => 'finish',
+            'validate'              => false,
+            'associated'            => [],
+            'validateAssociated'    => []
         ],
         'finish'    => [
-            'back'       => 'confirm',
-            'next'       => false,
-            'validate'   => false,
-            'associated' => []
+            'back'                  => 'confirm',
+            'next'                  => false,
+            'validate'              => false,
+            'associated'            => [],
+            'validateAssociated'    => []
         ],
     ];
 

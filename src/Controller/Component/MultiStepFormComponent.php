@@ -142,13 +142,20 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
             return true;
         }
 
+
+        $validateOptions = [];
+        $validateOptions['validate'] = $validate;
+        // optionがない時もしくは、空配列の時は見ない
+        if (!empty($actionConfig['validateAssociated'])) {
+            $validateOptions['associated'] = $actionConfig['validateAssociated'];
+        }
         // バリデーション時の(create, update)の制御用にEntityの作成方法を切り替える。
         if (!empty($actionConfig['id'])) {
             $entity = $this->Table->get($actionConfig['id']);
             $patchMethod = (isset($actionConfig['multiple']) && $actionConfig['multiple']) ? 'patchEntities': 'patchEntity';
-            $entity = $this->Table->{$patchMethod}($entity, $requestData, ['validate' => $validate]);
+            $entity = $this->Table->{$patchMethod}($entity, $requestData, $validateOptions);
         } else {
-            $entity = $this->handleNewEntity($requestData);
+            $entity = $this->handleNewEntity($requestData, $validateOptions);
         }
 
         if ($this->isError($entity)) {
@@ -259,7 +266,7 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
     private function fieldAdjustment($data)
     {
         $sourceTable = $this->Table;
-        $adjustment = function($data) use (&$adjustment)
+        $adjustment = function($data) use (&$adjustment, $sourceTable)
         {
             $data    = new \ArrayObject($data);
             if (method_exists($this->Table, 'beforeMarshal')) {
@@ -290,7 +297,25 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
                 }
             }
 
-            $sampleEntity = $this->handleNewEntity($data);
+            $actionConfig   = $this->getActionConfig();
+            $validateOptions = [];
+            // validateAssociatedが設定されていないときは今まで通り
+            if (empty($actionConfig['validateAssociated'])) {
+                $validateOptions['validate'] = $actionConfig['validate'];
+            } else {
+                // baseのテーブルの場合はそのままassociatedを入れる
+                if ($this->Table === $sourceTable) {
+                    $validateOptions['validate'] = $actionConfig['validate'];
+                    $validateOptions['associated'] = $actionConfig['validateAssociated'];
+                } else {
+                    // ベースのテーブルじゃないときは該当のvalidateAssociatedのvalidateを入れる
+                    if (!empty($actionConfig['validateAssociated'][$this->Table->getAlias()]['validate'])) {
+                        $validateOptions['validate'] = $actionConfig['validateAssociated'][$this->Table->getAlias()]['validate'];
+                    }
+                }
+            }
+
+            $sampleEntity = $this->handleNewEntity($data, $validateOptions);
             $sampleArray  = $sampleEntity->toArray();
             $setFields    = array_diff_key($sampleArray, $data);
             $unsetFields  = array_diff_key($data, $sampleArray);
@@ -341,7 +366,25 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
         unset($data[$this->Table->alias()]);
         $dataMeta = $this->fieldAdjustment($data);
 
-        $sampleEntities = $this->handleNewEntity($dataMultiple);
+        $actionConfig   = $this->getActionConfig();
+        $validateOptions = [];
+        // validateAssociatedが設定されていないときは今まで通り
+        if (empty($actionConfig['validateAssociated'])) {
+            $validateOptions['validate'] = $actionConfig['validate'];
+        } else {
+            // baseのテーブルの場合はそのままassociatedを入れる
+            if ($this->Table === $sourceTable) {
+                $validateOptions['validate'] = $actionConfig['validate'];
+                $validateOptions['associated'] = $actionConfig['validateAssociated'];
+            } else {
+                // ベースのテーブルじゃないときは該当のvalidateAssociatedのvalidateを入れる
+                if (!empty($actionConfig['validateAssociated'][$this->Table->getAlias()]['validate'])) {
+                    $validateOptions['validate'] = $actionConfig['validateAssociated'][$this->Table->getAlias()]['validate'];
+                }
+            }
+        }
+
+        $sampleEntities = $this->handleNewEntity($dataMultiple, $validateOptions);
 
         foreach ($sampleEntities as $entityKey => $sampleEntity) {
 
@@ -380,11 +423,8 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
      * handleNewEntity
      * @author ito
      */
-    protected function handleNewEntity($data)
+    protected function handleNewEntity($data, $validateOptions)
     {
-        $actionConfig   = $this->getActionConfig();
-        $validate       = $actionConfig['validate'];
-
         if ($this->isMultiple() && isset($data[$this->Table->alias()])) {
             $newMethod = 'newEntities';
             $data = $data[$this->Table->alias()];
@@ -392,8 +432,7 @@ class MultiStepFormComponent extends MultiStepFormCoreComponent
             $newMethod = 'newEntity';
             $data = $data;
         }
-
-        $entity = $this->Table->{$newMethod}($data, ['validate' => $validate]);
+        $entity = $this->Table->{$newMethod}($data, $validateOptions);
         if (!empty($data[$this->hiddenKey])) {
             $sessionKey = $data[$this->hiddenKey];
             if (is_array($entity)) {
