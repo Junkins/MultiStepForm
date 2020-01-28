@@ -358,8 +358,8 @@ class MultiStepFormCoreComponent extends Component
     protected function redirectFisrt()
     {
         $this->controller->Flash->error(__('It is over the post max size'));
-        $controller = $this->controller->request->controller;
-        $action = $this->controller->request->action;
+        $controller = $this->request->controller;
+        $action = $this->request->action;
         
         return $this->controller->redirect(['controller' => $controller, 'action' => $action]);
     }
