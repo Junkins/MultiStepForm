@@ -359,7 +359,7 @@ class MultiStepFormCoreComponent extends Component
     {
         $this->controller->Flash->error(__('It is over the post max size'));
         $passedArgs  = $this->request->getParam('pass');
-        $redirectUrl = ['action' => $this->action];
+        $redirectUrl = ['controller' => $this->request->controller, 'action' => $this->action];
         if (!empty($passedArgs)) {
             foreach ($passedArgs as $arg) {
                 $redirectUrl[] = $arg;
